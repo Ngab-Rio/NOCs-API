@@ -1,8 +1,15 @@
 package main
 
 import (
+	"time"
+
 	"github.com/Ngab-Rio/NOCs-API/internal/config"
 	"github.com/Ngab-Rio/NOCs-API/internal/database"
+	"github.com/Ngab-Rio/NOCs-API/internal/handlers"
+	"github.com/Ngab-Rio/NOCs-API/internal/repository"
+	"github.com/Ngab-Rio/NOCs-API/internal/routes"
+	"github.com/Ngab-Rio/NOCs-API/internal/services"
+	"github.com/Ngab-Rio/NOCs-API/internal/utils"
 	"github.com/gin-gonic/gin"
 )
 
@@ -16,6 +23,19 @@ func main() {
 			"message": "API Is Running",
 		})
 	})
+
+	jwtManager := utils.NewJWTManager(
+		cfg.JWTSecret,
+		cfg.JWTIssuer,
+		1*time.Hour, // expired token
+	)
+
+	// AUTH
+	authRepo := repository.NewAuthRepository(database.DB)
+	authService := services.NewAuthService(authRepo, jwtManager)
+	authHandler := handlers.NewAuthHandler(authService)
+
+	routes.SetupRoutes(router, authHandler)
 
 	router.Run(":" + cfg.AppPort)
 }
