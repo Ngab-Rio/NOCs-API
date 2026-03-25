@@ -1,11 +1,10 @@
-package middlewares
+package middleware
 
 import (
 	"net/http"
 	"strings"
 
 	"github.com/Ngab-Rio/NOCs-API/internal/utils"
-
 	"github.com/gin-gonic/gin"
 )
 
