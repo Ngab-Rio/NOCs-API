@@ -8,4 +8,5 @@ import (
 func ClientRoutes(r *gin.RouterGroup, clientHandler *handlers.ClientHandler) {
 	r.POST("", clientHandler.CreateClient)
 	r.PUT("/:id", clientHandler.UpdateClient)
+	r.DELETE("/:id", clientHandler.DeleteClient)
 }

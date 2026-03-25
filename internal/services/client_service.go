@@ -13,6 +13,7 @@ import (
 type ClientService interface {
 	CreateClient(ctx context.Context, req dto.CreateClientRequest) (*dto.ClientResponse, error)
 	UpdateClient(ctx context.Context, ClientID int, req dto.UpdateClientRequest) (*dto.ClientResponse, error)
+	DeleteClient(ctx context.Context, ClientID int) error
 }
 
 type clientService struct {
@@ -114,4 +115,20 @@ func (s *clientService) UpdateClient(ctx context.Context, clientID int, req dto.
 		Latitude:  client.Latitude,
 		Status:    client.Status,
 	}, nil
+}
+
+func (s *clientService) DeleteClient(ctx context.Context, clientID int) error {
+	client, err := s.clientRepo.FindByID(ctx, clientID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return errors.New("client not found")
+		}
+		return err
+	}
+
+	if err := s.clientRepo.Delete(ctx, client); err != nil {
+		return err
+	}
+
+	return nil
 }
