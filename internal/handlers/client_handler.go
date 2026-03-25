@@ -101,3 +101,29 @@ func (h *ClientHandler) DeleteClient(c *gin.Context) {
 		"message": "Client Deleted Successfully",
 	})
 }
+
+func (h *ClientHandler) GetClientByID(c *gin.Context) {
+	idParam := c.Param("id")
+
+	id, err := strconv.ParseInt(idParam, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "invalid id",
+		})
+		return
+	}
+
+	resp, err := h.clientService.GetClientByID(c, int(id))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Internal Server Error",
+			"error":   err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Client Found",
+		"data":    resp,
+	})
+}

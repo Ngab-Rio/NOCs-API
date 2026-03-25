@@ -14,6 +14,7 @@ type ClientService interface {
 	CreateClient(ctx context.Context, req dto.CreateClientRequest) (*dto.ClientResponse, error)
 	UpdateClient(ctx context.Context, ClientID int, req dto.UpdateClientRequest) (*dto.ClientResponse, error)
 	DeleteClient(ctx context.Context, ClientID int) error
+	GetClientByID(ctx context.Context, ClientID int) (*dto.ClientResponse, error)
 }
 
 type clientService struct {
@@ -131,4 +132,25 @@ func (s *clientService) DeleteClient(ctx context.Context, clientID int) error {
 	}
 
 	return nil
+}
+
+func (s *clientService) GetClientByID(ctx context.Context, clientID int) (*dto.ClientResponse, error) {
+	client, err := s.clientRepo.FindByID(ctx, clientID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errors.New("client not found")
+		}
+		return nil, err
+	}
+
+	return &dto.ClientResponse{
+		ID:        client.ID,
+		Name:      client.Name,
+		Email:     client.Email,
+		Phone:     client.Phone,
+		Address:   client.Address,
+		Longitude: client.Longitude,
+		Latitude:  client.Latitude,
+		Status:    client.Status,
+	}, nil
 }
