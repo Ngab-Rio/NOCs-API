@@ -127,3 +127,28 @@ func (h *ClientHandler) GetClientByID(c *gin.Context) {
 		"data":    resp,
 	})
 }
+
+func (h *ClientHandler) GetClients(c *gin.Context) {
+	var req dto.GetClientsRequest
+	if err := c.ShouldBindQuery(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Invalid Request Query",
+			"error":   err.Error(),
+		})
+		return
+	}
+
+	resp, err := h.clientService.GetClients(c, req)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Internal Server Error",
+			"error":   err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Clients Found",
+		"data":    resp,
+	})
+}

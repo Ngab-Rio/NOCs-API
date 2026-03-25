@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 
+	"github.com/Ngab-Rio/NOCs-API/internal/dto"
 	"github.com/Ngab-Rio/NOCs-API/internal/models"
 	"gorm.io/gorm"
 )
@@ -14,7 +15,7 @@ type ClientRepository interface {
 	FindByID(ctx context.Context, id int) (*models.Client, error)
 	FindByEmail(ctx context.Context, email string) (*models.Client, error)
 	FindByPhone(ctx context.Context, phone string) (*models.Client, error)
-	FindAll(limit, offset int) ([]models.Client, error)
+	FindAll(ctx context.Context, req dto.GetClientsRequest) ([]models.Client, int64, error)
 }
 
 type clientRepository struct {
@@ -63,13 +64,60 @@ func (r *clientRepository) FindByPhone(ctx context.Context, phone string) (*mode
 	return &client, nil
 }
 
-func (r *clientRepository) FindAll(limit, offset int) ([]models.Client, error) {
+func (r *clientRepository) FindAll(ctx context.Context, req dto.GetClientsRequest) ([]models.Client, int64, error) {
 	var clients []models.Client
+	var total int64
 
-	err := r.db.Limit(limit).Offset(offset).Find(&clients).Error
-	if err != nil {
-		return nil, err
+	baseQuery := r.db.WithContext(ctx).Model(&models.Client{})
+
+	if req.Search != "" {
+		search := "%" + req.Search + "%"
+		baseQuery = baseQuery.Where(
+			"name ILIKE ? OR email ILIKE ? OR phone ILIKE ? OR address ILIKE ?",
+			search, search, search, search,
+		)
 	}
 
-	return clients, nil
+	if req.Status != "" {
+		baseQuery = baseQuery.Where("status = ?", req.Status)
+	}
+
+	if err := baseQuery.Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	allowedSortBy := map[string]bool{
+		"name":       true,
+		"email":      true,
+		"phone":      true,
+		"address":    true,
+		"created_at": true,
+	}
+
+	sortBy := "created_at"
+	if allowedSortBy[req.SortBy] {
+		sortBy = req.SortBy
+	}
+
+	order := "desc"
+	if req.Order == "asc" {
+		order = "asc"
+	}
+
+	query := baseQuery.Order(sortBy + " " + order)
+
+	if req.Limit > 0 {
+		query = query.Limit(req.Limit)
+	}
+
+	if req.Offset > 0 {
+		query = query.Offset(req.Offset)
+	}
+
+	if err := query.Find(&clients).Error; err != nil {
+		return nil, 0, err
+	}
+
+	return clients, total, nil
+
 }

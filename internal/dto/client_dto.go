@@ -32,12 +32,17 @@ type ClientResponse struct {
 }
 
 type GetClientsRequest struct {
-	Limit  int `form:"limit" binding:"required,min=1,max=100"`
-	Offset int `form:"offset" binding:"min=0"`
+	Limit  int    `form:"limit" binding:"required,min=1,max=100"`
+	Offset int    `form:"offset" binding:"min=0"`
+	Search string `form:"search"`
+	SortBy string `form:"sort_by"`
+	Order  string `form:"order"`
+	Status string `form:"status"`
 }
 
 type GetClientsResponse struct {
 	Data   []ClientResponse `json:"data"`
 	Limit  int              `json:"limit"`
 	Offset int              `json:"offset"`
+	Total  int64            `json:"total"`
 }

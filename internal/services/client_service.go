@@ -15,6 +15,7 @@ type ClientService interface {
 	UpdateClient(ctx context.Context, ClientID int, req dto.UpdateClientRequest) (*dto.ClientResponse, error)
 	DeleteClient(ctx context.Context, ClientID int) error
 	GetClientByID(ctx context.Context, ClientID int) (*dto.ClientResponse, error)
+	GetClients(ctx context.Context, req dto.GetClientsRequest) (*dto.GetClientsResponse, error)
 }
 
 type clientService struct {
@@ -152,5 +153,33 @@ func (s *clientService) GetClientByID(ctx context.Context, clientID int) (*dto.C
 		Longitude: client.Longitude,
 		Latitude:  client.Latitude,
 		Status:    client.Status,
+	}, nil
+}
+
+func (s *clientService) GetClients(ctx context.Context, req dto.GetClientsRequest) (*dto.GetClientsResponse, error) {
+	clients, total, err := s.clientRepo.FindAll(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+
+	result := make([]dto.ClientResponse, len(clients))
+	for i, c := range clients {
+		result[i] = dto.ClientResponse{
+			ID:        c.ID,
+			Name:      c.Name,
+			Email:     c.Email,
+			Phone:     c.Phone,
+			Address:   c.Address,
+			Longitude: c.Longitude,
+			Latitude:  c.Latitude,
+			Status:    c.Status,
+		}
+	}
+
+	return &dto.GetClientsResponse{
+		Data:   result,
+		Limit:  req.Limit,
+		Offset: req.Offset,
+		Total:  total,
 	}, nil
 }

@@ -10,4 +10,5 @@ func ClientRoutes(r *gin.RouterGroup, clientHandler *handlers.ClientHandler) {
 	r.PUT("/:id", clientHandler.UpdateClient)
 	r.DELETE("/:id", clientHandler.DeleteClient)
 	r.GET("/:id", clientHandler.GetClientByID)
+	r.GET("", clientHandler.GetClients)
 }
