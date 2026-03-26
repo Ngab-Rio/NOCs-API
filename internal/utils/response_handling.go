@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"errors"
 	"net/http"
 
 	appErr "github.com/Ngab-Rio/NOCs-API/internal/errors"
@@ -8,19 +9,25 @@ import (
 )
 
 func HandleError(c *gin.Context, err error) {
-	switch err {
-	case appErr.ErrNotFound:
+	switch {
+	case errors.Is(err, appErr.ErrNotFound):
 		c.JSON(http.StatusNotFound, gin.H{
 			"message": err.Error(),
 		})
-	case appErr.ErrInvalidRequest:
+		return
+
+	case errors.Is(err, appErr.ErrInvalidRequest):
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": err.Error(),
 		})
-	case appErr.ErrUnauthorized:
+		return
+
+	case errors.Is(err, appErr.ErrUnauthorized):
 		c.JSON(http.StatusUnauthorized, gin.H{
 			"message": err.Error(),
 		})
+		return
+
 	default:
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Internal Server Error",

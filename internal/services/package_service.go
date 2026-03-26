@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	"github.com/Ngab-Rio/NOCs-API/internal/dto"
+	appErr "github.com/Ngab-Rio/NOCs-API/internal/errors"
 	"github.com/Ngab-Rio/NOCs-API/internal/models"
 	"github.com/Ngab-Rio/NOCs-API/internal/repository"
 	"gorm.io/gorm"
@@ -36,7 +37,7 @@ func (s *packageService) CreatePackage(ctx context.Context, req dto.CreatePackag
 	}
 
 	if existingPkg != nil {
-		return nil, errors.New("package with this speed already exists")
+		return nil, appErr.ErrInvalidRequest
 	}
 
 	pkg := &models.Package{
@@ -62,12 +63,13 @@ func (s *packageService) UpdatePackage(ctx context.Context, packageID int, req *
 	pkg, err := s.packageRepo.FindByID(ctx, packageID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, errors.New("package not found")
+			return nil, appErr.ErrNotFound
 		}
 		return nil, err
 	}
+
 	if pkg == nil {
-		return nil, errors.New("package not found")
+		return nil, appErr.ErrNotFound
 	}
 
 	if req.Name != nil {
@@ -103,13 +105,13 @@ func (s *packageService) DeletePackage(ctx context.Context, packageID int) error
 	pkg, err := s.packageRepo.FindByID(ctx, packageID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return errors.New("package not found")
+			return appErr.ErrNotFound
 		}
 		return err
 	}
 
 	if pkg == nil {
-		return errors.New("package not found")
+		return appErr.ErrNotFound
 	}
 
 	if err := s.packageRepo.Delete(ctx, pkg); err != nil {
@@ -123,13 +125,13 @@ func (s *packageService) FindPackageByID(ctx context.Context, packageID int) (*m
 	pkg, err := s.packageRepo.FindByID(ctx, packageID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, errors.New("package not found")
+			return nil, appErr.ErrNotFound
 		}
 		return nil, err
 	}
 
 	if pkg == nil {
-		return nil, errors.New("package not found")
+		return nil, appErr.ErrNotFound
 	}
 
 	return pkg, nil
