@@ -40,7 +40,7 @@ func (s *authService) Login(ctx context.Context, req dto.LoginRequest) (*dto.Log
 		return nil, errors.New("invalid password")
 	}
 
-	user, err := s.authRepo.FindByEmail(req.Email)
+	user, err := s.authRepo.FindByEmail(ctx, req.Email)
 	if err != nil {
 		return nil, err
 	}

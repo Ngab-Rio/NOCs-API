@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"context"
 	"errors"
 
 	"github.com/Ngab-Rio/NOCs-API/internal/models"
@@ -8,8 +9,8 @@ import (
 )
 
 type AuthRepository interface {
-	FindByEmail(email string) (*models.User, error)
-	FindByID(id uint) (*models.User, error)
+	FindByEmail(ctx context.Context, email string) (*models.User, error)
+	FindByID(ctx context.Context, id uint) (*models.User, error)
 }
 
 type authRepository struct {
@@ -20,10 +21,13 @@ func NewAuthRepository(db *gorm.DB) AuthRepository {
 	return &authRepository{db: db}
 }
 
-func (r *authRepository) FindByEmail(email string) (*models.User, error) {
+func (r *authRepository) FindByEmail(ctx context.Context, email string) (*models.User, error) {
 	var user models.User
 
-	err := r.db.Where("email = ?", email).First(&user).Error
+	err := r.db.WithContext(ctx).
+		Where("email = ?", email).
+		First(&user).Error
+
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
@@ -34,10 +38,19 @@ func (r *authRepository) FindByEmail(email string) (*models.User, error) {
 	return &user, nil
 }
 
-func (r *authRepository) FindByID(id uint) (*models.User, error) {
+func (r *authRepository) FindByID(ctx context.Context, id uint) (*models.User, error) {
 	var user models.User
-	if err := r.db.Where("id = ?", id).First(&user).Error; err != nil {
+
+	err := r.db.WithContext(ctx).
+		Where("id = ?", id).
+		First(&user).Error
+
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
 		return nil, err
 	}
+
 	return &user, nil
 }
