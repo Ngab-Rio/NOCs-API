@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	"github.com/Ngab-Rio/NOCs-API/internal/dto"
+	appErr "github.com/Ngab-Rio/NOCs-API/internal/errors"
 	"github.com/Ngab-Rio/NOCs-API/internal/models"
 	"github.com/Ngab-Rio/NOCs-API/internal/repository"
 	"gorm.io/gorm"
@@ -33,7 +34,7 @@ func (s *clientService) CreateClient(ctx context.Context, req dto.CreateClientRe
 	}
 
 	if existingClient != nil {
-		return nil, errors.New("email already registered")
+		return nil, appErr.ErrInvalidRequest
 	}
 
 	existingPhone, err := s.clientRepo.FindByPhone(ctx, req.Phone)
@@ -42,7 +43,7 @@ func (s *clientService) CreateClient(ctx context.Context, req dto.CreateClientRe
 	}
 
 	if existingPhone != nil {
-		return nil, errors.New("number phone already registered")
+		return nil, appErr.ErrInvalidRequest
 	}
 
 	client := &models.Client{
@@ -76,7 +77,7 @@ func (s *clientService) UpdateClient(ctx context.Context, clientID int, req dto.
 
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, errors.New("client not found")
+			return nil, appErr.ErrNotFound
 		}
 		return nil, err
 	}
@@ -123,7 +124,7 @@ func (s *clientService) DeleteClient(ctx context.Context, clientID int) error {
 	client, err := s.clientRepo.FindByID(ctx, clientID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return errors.New("client not found")
+			return appErr.ErrNotFound
 		}
 		return err
 	}
@@ -139,7 +140,7 @@ func (s *clientService) GetClientByID(ctx context.Context, clientID int) (*dto.C
 	client, err := s.clientRepo.FindByID(ctx, clientID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, errors.New("client not found")
+			return nil, appErr.ErrNotFound
 		}
 		return nil, err
 	}

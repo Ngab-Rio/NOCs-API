@@ -1,11 +1,11 @@
 package handlers
 
 import (
-	"net/http"
 	"strconv"
 
 	"github.com/Ngab-Rio/NOCs-API/internal/dto"
 	"github.com/Ngab-Rio/NOCs-API/internal/services"
+	"github.com/Ngab-Rio/NOCs-API/internal/utils"
 	"github.com/gin-gonic/gin"
 )
 
@@ -20,35 +20,23 @@ func NewClientHandler(clientService services.ClientService) *ClientHandler {
 func (h *ClientHandler) CreateClient(c *gin.Context) {
 	var req dto.CreateClientRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "Invalid Request Body",
-			"error":   err.Error(),
-		})
+		utils.HandleError(c, err)
 		return
 	}
 
 	resp, err := h.clientService.CreateClient(c, req)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Internal Server Error",
-			"error":   err.Error(),
-		})
+		utils.HandleError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"message": "Client Created Successfully",
-		"data":    resp,
-	})
+	utils.Success(c, "Client Created Successfully", resp)
 }
 
 func (h *ClientHandler) UpdateClient(c *gin.Context) {
 	var req dto.UpdateClientRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "Invalid Request Body",
-			"error":   err.Error(),
-		})
+		utils.HandleError(c, err)
 		return
 	}
 
@@ -56,25 +44,17 @@ func (h *ClientHandler) UpdateClient(c *gin.Context) {
 
 	id, err := strconv.ParseInt(idParam, 10, 64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "invalid id",
-		})
+		utils.HandleError(c, err)
 		return
 	}
 
 	resp, err := h.clientService.UpdateClient(c, int(id), req)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Internal Server Error",
-			"error":   err.Error(),
-		})
+		utils.HandleError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"message": "Client Updated Successfully",
-		"data":    resp,
-	})
+	utils.Success(c, "Client Updated Successfully", resp)
 }
 
 func (h *ClientHandler) DeleteClient(c *gin.Context) {
@@ -82,24 +62,17 @@ func (h *ClientHandler) DeleteClient(c *gin.Context) {
 
 	id, err := strconv.ParseInt(idParam, 10, 64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "invalid id",
-		})
+		utils.HandleError(c, err)
 		return
 	}
 
 	err = h.clientService.DeleteClient(c, int(id))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Internal Server Error",
-			"error":   err.Error(),
-		})
+		utils.HandleError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"message": "Client Deleted Successfully",
-	})
+	utils.Success(c, "Client Deleted Successfully", nil)
 }
 
 func (h *ClientHandler) GetClientByID(c *gin.Context) {
@@ -107,48 +80,31 @@ func (h *ClientHandler) GetClientByID(c *gin.Context) {
 
 	id, err := strconv.ParseInt(idParam, 10, 64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "invalid id",
-		})
+		utils.HandleError(c, err)
 		return
 	}
 
 	resp, err := h.clientService.GetClientByID(c, int(id))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Internal Server Error",
-			"error":   err.Error(),
-		})
+		utils.HandleError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"message": "Client Found",
-		"data":    resp,
-	})
+	utils.Success(c, "Client Found", resp)
 }
 
 func (h *ClientHandler) GetClients(c *gin.Context) {
 	var req dto.GetClientsRequest
 	if err := c.ShouldBindQuery(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "Invalid Request Query",
-			"error":   err.Error(),
-		})
+		utils.HandleError(c, err)
 		return
 	}
 
 	resp, err := h.clientService.GetClients(c, req)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Internal Server Error",
-			"error":   err.Error(),
-		})
+		utils.HandleError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"message": "Clients Found",
-		"data":    resp,
-	})
+	utils.Success(c, "Clients Found", resp)
 }
