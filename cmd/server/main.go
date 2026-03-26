@@ -35,7 +35,12 @@ func main() {
 	authService := services.NewAuthService(authRepo, jwtManager)
 	authHandler := handlers.NewAuthHandler(authService)
 
-	routes.SetupRoutes(router, authHandler)
+	// PACKAGE
+	packageRepo := repository.NewPackageRepository(database.DB)
+	packageService := services.NewPackageService(packageRepo)
+	packageHandler := handlers.NewPackageHandler(packageService)
+
+	routes.SetupRoutes(router, authHandler, packageHandler, jwtManager)
 
 	router.Run(":" + cfg.AppPort)
 }
